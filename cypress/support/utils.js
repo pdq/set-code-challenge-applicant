@@ -50,7 +50,7 @@ export const visit = (skipWaiting) => {
   }
 }
 
-export const getTodoApp = () => cy.get('.todoapp')
+export const getTodoApp = (enableLog) => cy.get('.todoapp', { log: enableLog })
 
 export const getTodoItems = () => getTodoApp().find('.todo-list').find('li')
 
@@ -82,17 +82,18 @@ export const makeTodo = (text = 'todo') => {
   }
 }
 
-export const getNewTodoInput = () => getTodoApp().find('.new-todo')
+export const getNewTodoInput = (enableLog) => getTodoApp(enableLog).find('.new-todo', { log: enableLog })
 
 /**
  * Adds new todo to the app.
- *
+ * and verifies it was added
+ * 
  * @param text {string} Text to enter
  * @example
  *  enterTodo('my todo')
  */
-export const enterTodo = (text = 'example todo') => {
-  getNewTodoInput().type(`${text}{enter}`)
+export const enterTodo = (text = 'example todo', enableLog = true) => {
+  getNewTodoInput(enableLog).type(`${text}{enter}`, { log: enableLog })
 
   // we need to make sure the store and the vue component
   // get updated and the DOM is updated.
@@ -100,7 +101,19 @@ export const enterTodo = (text = 'example todo') => {
   // I am going to use combined selector to always grab
   // the element and not use stale reference from previous chain call
   const lastItem = '.todoapp .todo-list li:last'
-  cy.get(lastItem).should('contain', text)
+  cy.get(lastItem, { log: enableLog }).should('contain', text, { log: false })
+}
+/**
+ * get a todo by index
+ * 
+ * @param index {int} 0 based item index
+ * @example
+ *  getTodo(0)
+ */
+export const getTodo = (index) => {
+
+  const list = '.todoapp .todo-list>li'
+  return cy.get(list).eq(index)
 }
 
 /**
@@ -108,9 +121,9 @@ export const enterTodo = (text = 'example todo') => {
  * @param {string} text The todo to find and remove
  */
 export const removeTodo = (text) => {
-  cy.contains('.todoapp .todo-list li', text)
-    .find('.destroy')
-    .click({ force: true })
+  cy.contains('.todoapp .todo-list li', text, { log: false })
+    .find('.destroy', { log: false })
+    .click({ force: true, log: false })
 }
 
 // a couple of aliases for 12-custom-commands answers
